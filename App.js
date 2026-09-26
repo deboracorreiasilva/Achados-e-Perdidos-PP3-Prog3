@@ -8,6 +8,7 @@ import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context"
 import {  createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useRoute, NavigationContainer } from "@react-navigation/native";
 import DropDownPicker from 'react-native-dropdown-picker';
+import * as ImagePicker from 'expo-image-picker';
 
 const LoginScreen = () => {
   return (
@@ -234,6 +235,52 @@ const RegistrarItem = () => {
     {id: 2, title: 'Relógio', value: 'relogio'},
   ]
 
+  //https://docs.expo.dev/versions/latest/sdk/imagepicker/
+
+  /*
+  const [imagem, setImagem] = useState <string | null> (null);
+  const escolherImagem = async () => {
+    const permissaoResultado = await ImagePicker.requestMediaLibraryPermissionAsync();
+
+    if(!permissaoResultado.granted) {
+      Alert.alert('Permissão necessária', 'Permissão para acessar a biblioteca de imagens é necessária');
+      return;
+    };
+
+    let resultado = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(resultado);
+
+    if(!resultado.canceled){
+      setImagem(resultado.assets[0].uri);
+    };
+  };
+
+  const tirarFoto = async () => {
+    const permissaoResultado = await ImagePicker.requestCameraPermissionsAsync();
+
+    if(!permissaoResultado.granted){
+      Alert.alert('Permissão necessária', 'Permissão para acessar a câmera é necessária');
+      return;
+    };
+
+    let resultado = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [4,3],
+      quality: 1,
+    });
+
+    console.log(resultado);
+
+    if(!resultado.canceled){
+      setImagem(resultado.assets[0].uri);
+    }
+  };*/
 
   return (
     <SafeAreaProvider>
@@ -250,7 +297,20 @@ const RegistrarItem = () => {
         />
 
         <View style={styles.view}>
-          <Text>Título</Text>
+          {/*<Text style={styles.text}>Foto</Text>
+          <Pressable
+            style={styles.pressable}
+            onPress={(escolherImagem) => Alert.alert('Botão de  escolher imagem pressionado')}>
+            <Text style={styles.text_botao}>Escolher Imagem</Text>
+          </Pressable>
+
+          <Pressable
+            style={styles.pressable}
+            onPress={(tirarFoto) => Alert.alert('Botão de  tirar foto pressionado')}>
+            <Text style={styles.text_botao}>Tirar Foto</Text>
+          </Pressable>*/}
+          
+          <Text  style={styles.text}>Título</Text>
 
           <TextInput
             style={styles.input_quest}
@@ -258,7 +318,7 @@ const RegistrarItem = () => {
             onChangeText={onChangeTitulo}
           />
 
-          <Text>Tipo</Text>
+          <Text style={styles.text}>Tipo</Text>
           
           <DropDownPicker
             style={{
@@ -273,7 +333,7 @@ const RegistrarItem = () => {
             setItens={setOpcoes}
           />
 
-          <Text>Local</Text>
+          <Text style={styles.text}>Local</Text>
 
           <TextInput
             style={styles.input_quest}
@@ -281,7 +341,7 @@ const RegistrarItem = () => {
             onChangeText={onChangeLocal}
           />
 
-          <Text>Data</Text>
+          <Text style={styles.text}>Data</Text>
           
           <TextInput
             style={styles.input_quest}
@@ -289,13 +349,13 @@ const RegistrarItem = () => {
             onChangeText={onChangeData}
           />
 
-          <Text>Descricao</Text>
+          <Text style={styles.text}>Descricao</Text>
 
           <TextInput
             style={styles.descricao}
             value={descricao}
             onChangeText={onChangeDescricao}
-            multiline = 'true'
+            //multiline = 'true'
           />
 
           <Pressable
