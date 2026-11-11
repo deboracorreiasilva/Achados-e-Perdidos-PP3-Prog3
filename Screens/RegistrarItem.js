@@ -1,179 +1,191 @@
 import { useState } from "react";
-import { StatusBar } from 'expo-status-bar';
-import { TextInput } from 'react-native';
-import { ListItem, SearchBar, Icon, Image, Avatar } from 'react-native-elements';
-import { Header } from '@rneui/themed';
-import { StyleSheet, Text, ScrollView, Pressable, Alert, View } from 'react-native';
-import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context"
-import {  createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useRoute, NavigationContainer } from "@react-navigation/native";
+import {
+  StyleSheet,
+  Text,
+  ScrollView,
+  Pressable,
+  Alert,
+  View,
+  TextInput,
+  Image,
+  ActivityIndicator,
+} from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import DropDownPicker from 'react-native-dropdown-picker';
 import * as ImagePicker from 'expo-image-picker';
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from './firebaseConfig';
 
 //https://reactnative.dev/docs/tutorial
 
-//firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyDCpGyqwi_AYbqILpxbBDs-L3YZn1ugzQE",
-  authDomain: "achados-e-perdidos-37247.firebaseapp.com",
-  projectId: "achados-e-perdidos-37247",
-  storageBucket: "achados-e-perdidos-37247.firebasestorage.app",
-  messagingSenderId: "314245637379",
-  appId: "1:314245637379:web:34194680a6499a74997536",
-  measurementId: "G-5MJWC7VLN2"
-};
-
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-
-const Stack = createNativeStackNavigator();
-
-const RegistrarItem = () => {
-
+const RegistrarItem = ({ navigation }) => {
   const [titulo, onChangeTitulo] = useState("");
   const [local, onChangeLocal] = useState("");
   const [descricao, onChangeDescricao] = useState("");
   const [data, onChangeData] = useState("");
+  const [imagem, setImagem] = useState(null);
+  const [erro, setErro] = useState("");
+  const [salvando, setSalvando] = useState(false);
 
   //de Dropdown Picker em: https://hossein-zare.github.io/react-native-dropdown-picker-website/docs/usage
   const [open, setOpen] = useState(false);
-  const [Value, setValue] = useState(null);
-  const [itens, setItens] = useState([
-    {label: 'Garrafa', value: 'garrafa'},
-    {label: 'Relógio', value: 'relogio'},
+  const [value, setValue] = useState(null);
+  const [items, setItems] = useState([
+    { label: 'Garrafa', value: 'garrafa' },
+    { label: 'Relógio', value: 'relogio' },
   ]);
 
   //https://docs.expo.dev/versions/latest/sdk/imagepicker/
-
-  /*
-  const [imagem, setImagem] = useState <string | null> (null);
   const escolherImagem = async () => {
-    const permissaoResultado = await ImagePicker.requestMediaLibraryPermissionAsync();
+    const permissaoResultado = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    if(!permissaoResultado.granted) {
+    if (!permissaoResultado.granted) {
       Alert.alert('Permissão necessária', 'Permissão para acessar a biblioteca de imagens é necessária');
       return;
-    };
+    }
 
-    let resultado = await ImagePicker.launchImageLibraryAsync({
+    const resultado = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
     });
 
-    console.log(resultado);
-
-    if(!resultado.canceled){
+    if (!resultado.canceled) {
       setImagem(resultado.assets[0].uri);
-    };
+    }
   };
 
   const tirarFoto = async () => {
     const permissaoResultado = await ImagePicker.requestCameraPermissionsAsync();
 
-    if(!permissaoResultado.granted){
+    if (!permissaoResultado.granted) {
       Alert.alert('Permissão necessária', 'Permissão para acessar a câmera é necessária');
       return;
-    };
+    }
 
-    let resultado = await ImagePicker.launchCameraAsync({
+    const resultado = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
-      aspect: [4,3],
+      aspect: [4, 3],
       quality: 1,
     });
 
-    console.log(resultado);
-
-    if(!resultado.canceled){
+    if (!resultado.canceled) {
       setImagem(resultado.assets[0].uri);
     }
-  };*/
+  };
+
+  const registrar = async () => {
+    setErro("");
+
+    if (!titulo.trim() || !local.trim() || !data.trim()) {
+      setErro("Preencha título, local e data.");
+      return;
+    }
+
+    setSalvando(true);
+    try {
+      await addDoc(collection(db, 'itens'), {
+        titulo: titulo.trim(),
+        tipo: value,
+        local: local.trim(),
+        data: data.trim(),
+        descricao: descricao.trim(),
+        imagem: null,
+        donoId: auth.currentUser.uid,
+        donoNome: auth.currentUser.displayName || '',
+        donoEmail: auth.currentUser.email,
+        criadoEm: serverTimestamp(),
+      });
+      navigation.goBack();
+    } catch (e) {
+      setErro("Não foi possível registrar o item. Tente novamente.");
+      setSalvando(false);
+    }
+  };
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.view}>
+        <View style={styles.quest}>
+          <Text style={styles.text}>Foto</Text>
 
-        <ScrollView ContentContainerStyle={styles.view}>
-          <View style={styles.quest}>
-            <Text style={styles.text}>Foto</Text>
-            <Pressable
-              style={styles.pressable}
-              onPress={(escolherImagem) => Alert.alert('Botão de  escolher imagem pressionado')}>
-              <Text style={styles.text_botao}>Escolher Imagem</Text>
-            </Pressable>
+          {imagem && <Image source={{ uri: imagem }} style={styles.imagem} />}
 
-            <Pressable
-              style={styles.pressable}
-              onPress={(tirarFoto) => Alert.alert('Botão de  tirar foto pressionado')}>
-              <Text style={styles.text_botao}>Tirar Foto</Text>
-            </Pressable>
+          <Pressable style={styles.pressable} onPress={escolherImagem}>
+            <Text style={styles.text_botao}>Escolher Imagem</Text>
+          </Pressable>
 
-            <Text  style={styles.text}>Título</Text>
+          <Pressable style={styles.pressable} onPress={tirarFoto}>
+            <Text style={styles.text_botao}>Tirar Foto</Text>
+          </Pressable>
 
-            <TextInput
-              style={styles.input_quest}
-              value={titulo}
-              onChangeText={onChangeTitulo}
-            />
+          <Text style={styles.text}>Título</Text>
 
-            <Text style={styles.text}>Tipo</Text>
+          <TextInput
+            style={styles.input_quest}
+            value={titulo}
+            onChangeText={onChangeTitulo}
+          />
 
-            <DropDownPicker
-              style={styles.dropdown}
-              value={Value}
-              searchable={true}
-              searchPlaceholder="Pesquisar..."
-              placeholder="Selecione um item"
-              schema={{
-                label: itens.title,
-                value: itens.val
-              }}
-              open={open}
-              itens={itens}
-              setOpen={setOpen}
-              setValue={setValue}
-              setItens={setItens}
-            />
+          <Text style={styles.text}>Tipo</Text>
 
-            <Text style={styles.text}>Local</Text>
+          <DropDownPicker
+            style={styles.dropdown}
+            searchable={true}
+            searchPlaceholder="Pesquisar..."
+            placeholder="Selecione um item"
+            listMode="SCROLLVIEW"
+            open={open}
+            value={value}
+            items={items}
+            setOpen={setOpen}
+            setValue={setValue}
+            setItems={setItems}
+          />
 
-            <TextInput
-              style={styles.input_quest}
-              value={local}
-              onChangeText={onChangeLocal}
-            />
+          <Text style={styles.text}>Local</Text>
 
-            <Text style={styles.text}>Data</Text>
+          <TextInput
+            style={styles.input_quest}
+            value={local}
+            onChangeText={onChangeLocal}
+          />
 
-            <TextInput
-              style={styles.input_quest}
-              value={data}
-              onChangeText={onChangeData}
-            />
+          <Text style={styles.text}>Data</Text>
 
-            <Text style={styles.text}>Descricao</Text>
+          <TextInput
+            style={styles.input_quest}
+            value={data}
+            onChangeText={onChangeData}
+          />
 
-            <TextInput
-              style={styles.descricao}
-              value={descricao}
-              onChangeText={onChangeDescricao}
-              multiline = {true}
-            />
+          <Text style={styles.text}>Descricao</Text>
 
-            <Pressable
-              style={styles.pressable}
-              onPress={() => Alert.alert('Botão de registrar item pressionado')}>
+          <TextInput
+            style={styles.descricao}
+            value={descricao}
+            onChangeText={onChangeDescricao}
+            multiline={true}
+          />
+
+          {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
+
+          <Pressable
+            style={styles.pressable}
+            onPress={registrar}
+            disabled={salvando}>
+            {salvando ? (
+              <ActivityIndicator color="#121212" />
+            ) : (
               <Text style={styles.text_botao}>Registrar Item</Text>
-            </Pressable>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </SafeAreaProvider>
-  )
-}
+            )}
+          </Pressable>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -186,13 +198,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'flex-start',
     justifyContent: 'center',
-    justifyContent: 'center',
     alignContent: 'stretch',
-    width: '100%'
+    width: '100%',
+    paddingBottom: 40,
   },
   quest: {
     width: '100%',
-    height: '80%',
   },
   dropdown: {
     margin: 20,
@@ -219,27 +230,32 @@ const styles = StyleSheet.create({
   text: {
     marginEnd: 250,
     marginHorizontal: 30,
-    fontSize: 17
+    fontSize: 17,
+  },
+  erro: {
+    color: '#c62828',
+    marginHorizontal: 30,
+    marginVertical: 8,
+    maxWidth: 320,
   },
   text_botao: {
     color: '#121212',
-
+    alignSelf: 'center',
   },
   pressable: {
-    backgroundColor: '#AFA9FF',
-    width: 220,
-    height: 10,
-    borderRadius: 35,
-    marginTop: 10,
-    marginBottom: 10,
-    padding: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 100,
+    height: 40,
+    width: 200,
+    padding: 10,
+    margin: 10,
+    backgroundColor: '#bebbf7',
+    alignSelf: 'flex-start',
   },
   //https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/box-shadow
   imagem: {
     height: 200,
     width: 200,
+    margin: 20,
   },
 });
 
