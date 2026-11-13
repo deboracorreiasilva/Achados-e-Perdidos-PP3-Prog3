@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
   },
   informacoes: {
-    marginLeft: 35,
+    marginLeft: 28,
     justifyContent: 'center',
   },
   botaoPressionado: {
@@ -155,13 +155,15 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   nome: {
-    fontSize: 23,
+    //fontSize: 23,
+    fontSize: 22,
     fontWeight: '400',
     color: '#111',
     marginBottom: 2,
   },
   email: {
-    fontSize: 21,
+    //fontSize: 21,
+    fontSize: 16,
     fontWeight: '400',
     color: '#111',
   },

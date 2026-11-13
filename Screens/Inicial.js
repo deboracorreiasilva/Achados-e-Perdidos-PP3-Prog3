@@ -22,18 +22,24 @@ const itens = [
     {
       nome: 'Item 1',
       avatar_url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7CuFWYHxngNBxvuv_fCb6Gc_J0znbdDM2DIHX-xY8jQ&s',
+      local: 'Sala 01',
+      data: '10/09/2026',
       //icon: 'apparel',
       descricao: 'O item 1 foi encontrado em tal lugar em tal dia'
     },
     {
       nome: 'Item 2',
       avatar_url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJ6kRNdZzBxQ2nXriy7lsr72-ii7iBbzc7HfLqzDEK_w&s=10',
+      local: 'Sala 16',
+      data: '23/07/2026',
       //icon: 'cards-stack',
       descricao: 'O item 2 foi encontrado em tal lugar em tal dia'
     },
     {
       nome: 'Item 3',
       avatar_url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJ6kRNdZzBxQ2nXriy7lsr72-ii7iBbzc7HfLqzDEK_w&s=10',
+      local: 'Sala 11',
+      data: '17/02/2026',
       //icon: 'cards-stack',
       descricao: 'O item 3 foi encontrado em tal lugar em tal dia'
     },
@@ -43,6 +49,8 @@ const itensExemplo = itens.map((item, indice) => ({
   id: `exemplo-${indice}`,
   titulo: item.nome,
   imagem: item.avatar_url,
+  local: item.local,
+  data: item.data,
   descricao: item.descricao,
 }));
 
@@ -58,7 +66,7 @@ const ItemCard = ({ item }) => (
         <Ionicons name="image-outline" size={60} color="#aaa" />
       </View>
     )}
-    <Text style={styles.text_item}>{item.titulo}</Text>
+    <Text style={styles.titulo_item}>{item.titulo}</Text>
     {item.local || item.data ? (
       <Text style={styles.text_item}>{item.local} - {item.data}</Text>
     ) : null}
@@ -198,24 +206,32 @@ const styles = StyleSheet.create({
     marginHorizontal: 30,
   },
   item: {
-    height: 250,
-    width: 250,
+    height: 230,
+    width: 230,
     borderWidth: 2,
     borderRadius: 15,
     borderColor: '#e2dcdc',
     boxShadow: '0px 2px 4px rgba(59, 59, 59, 0.21)',
     backgroundColor: '#ededed',
+    alignSelf: 'flex-start',
+    padding: 5,
+  },
+  titulo_item: {
+    fontSize: 15,
+    margin: 5,
   },
   text_item: {
     fontSize: 12,
-    margin: 5,
+    marginBottom: 3,
+    marginLeft: 10,
   },
   //https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/box-shadow
   imagem: {
-    height: 150,
-    width: 150,
+    height: 100,
+    width: 100,
     alignSelf: 'center',
     margin: 8,
+    borderRadius: 10,
   },
   semImagem: {
     backgroundColor: '#dcdcdc',

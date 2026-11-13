@@ -1,17 +1,8 @@
 import { useState } from "react";
 import {
-  StyleSheet,
-  Text,
-  ScrollView,
-  Pressable,
-  Alert,
-  View,
-  TextInput,
-  Image,
-  ActivityIndicator,
+  StyleSheet, Text, ScrollView, Pressable, Alert, View, TextInput, Image, ActivityIndicator, Animated, Keyboard
 } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
-import DropDownPicker from 'react-native-dropdown-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './firebaseConfig';
@@ -28,12 +19,12 @@ const RegistrarItem = ({ navigation }) => {
   const [salvando, setSalvando] = useState(false);
 
   //de Dropdown Picker em: https://hossein-zare.github.io/react-native-dropdown-picker-website/docs/usage
-  const [open, setOpen] = useState(false);
+  /*const [open, setOpen] = useState(false);
   const [value, setValue] = useState(null);
   const [items, setItems] = useState([
     { label: 'Garrafa', value: 'garrafa' },
     { label: 'Relógio', value: 'relogio' },
-  ]);
+  ]);*/
 
   //https://docs.expo.dev/versions/latest/sdk/imagepicker/
   const escolherImagem = async () => {
@@ -87,7 +78,6 @@ const RegistrarItem = ({ navigation }) => {
     try {
       await addDoc(collection(db, 'itens'), {
         titulo: titulo.trim(),
-        tipo: value,
         local: local.trim(),
         data: data.trim(),
         descricao: descricao.trim(),
@@ -104,9 +94,13 @@ const RegistrarItem = ({ navigation }) => {
     }
   };
 
+  //https://medium.com/free-code-camp/how-to-make-your-react-native-app-respond-gracefully-when-the-keyboard-pops-up-7442c1535580 = integração do teclado
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.view}>
+      <ScrollView 
+        contentContainerStyle={styles.view}
+      >
         <View style={styles.quest}>
           <Text style={styles.text}>Foto</Text>
 
@@ -128,22 +122,6 @@ const RegistrarItem = ({ navigation }) => {
             onChangeText={onChangeTitulo}
           />
 
-          <Text style={styles.text}>Tipo</Text>
-
-          <DropDownPicker
-            style={styles.dropdown}
-            searchable={true}
-            searchPlaceholder="Pesquisar..."
-            placeholder="Selecione um item"
-            listMode="SCROLLVIEW"
-            open={open}
-            value={value}
-            items={items}
-            setOpen={setOpen}
-            setValue={setValue}
-            setItems={setItems}
-          />
-
           <Text style={styles.text}>Local</Text>
 
           <TextInput
@@ -159,6 +137,7 @@ const RegistrarItem = ({ navigation }) => {
             value={data}
             onChangeText={onChangeData}
           />
+          <Text style={{color: 'red',}}>escolher data pelo calendário</Text>
 
           <Text style={styles.text}>Descricao</Text>
 
@@ -204,10 +183,6 @@ const styles = StyleSheet.create({
   },
   quest: {
     width: '100%',
-  },
-  dropdown: {
-    margin: 20,
-    width: 300,
   },
   input_quest: {
     borderWidth: 1,
