@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Image, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, Image, ScrollView, Pressable, Alert } from 'react-native';
 import { Ionicons } from "@expo/vector-icons";
 
 //https://reactnative.dev/docs/tutorial
@@ -30,9 +30,6 @@ const Item = ({ route }) => {
 
       <Text style={styles.titulo}>{item.titulo}</Text>
 
-      <Text style={styles.rotulo}>Tipo</Text>
-      <Text style={styles.valor}>{item.tipo || 'Não informado'}</Text>
-
       <Text style={styles.rotulo}>Local</Text>
       <Text style={styles.valor}>{item.local || 'Não informado'}</Text>
 
@@ -44,6 +41,14 @@ const Item = ({ route }) => {
 
       <Text style={styles.rotulo}>Registrado por</Text>
       <Text style={styles.valor}>{item.donoNome || item.donoEmail || 'Não informado'}</Text>
+
+      <Pressable
+        style={styles.botao}
+        onPress={() => Alert.alert('Editar Item', 'O botão "Editar Item" foi pressionado.')}
+      >
+        <Text style={styles.text_botao}>Editar Item</Text>
+      </Pressable>
+
     </ScrollView>
   );
 };
@@ -69,6 +74,19 @@ const styles = StyleSheet.create({
   titulo: {
     fontSize: 24,
     marginBottom: 16,
+  },
+  botao: {
+    borderRadius: 100,
+    height: 40,
+    width: 200,
+    padding: 10,
+    margin: 12,
+    backgroundColor: '#b7afff',
+    alignSelf: 'flex-start',
+  },
+   text_botao: {
+    color: '#121212',
+    alignSelf: 'center',
   },
   rotulo: {
     fontSize: 13,

@@ -137,7 +137,7 @@ const RegistrarItem = ({ navigation }) => {
             value={data}
             onChangeText={onChangeData}
           />
-          <Text style={{color: 'red',}}>escolher data pelo calendário</Text>
+          <Text style={{color: 'red', fontSize: 20}}>escolher data pelo calendário</Text>
 
           <Text style={styles.text}>Descricao</Text>
 
@@ -151,7 +151,7 @@ const RegistrarItem = ({ navigation }) => {
           {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
 
           <Pressable
-            style={styles.pressable}
+            style={styles.registrar}
             onPress={registrar}
             disabled={salvando}>
             {salvando ? (
@@ -219,12 +219,21 @@ const styles = StyleSheet.create({
   },
   pressable: {
     borderRadius: 100,
+    height: 35,
+    width: 165,
+    padding: 8,
+    margin: 10,
+    backgroundColor: '#bebbf7',
+    alignSelf: 'flex-start',
+  },
+  registrar: {
+    borderRadius: 100,
     height: 40,
     width: 200,
     padding: 10,
     margin: 10,
-    backgroundColor: '#bebbf7',
-    alignSelf: 'flex-start',
+    backgroundColor: '#94b6f6',
+    alignSelf: 'center',
   },
   //https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/box-shadow
   imagem: {
