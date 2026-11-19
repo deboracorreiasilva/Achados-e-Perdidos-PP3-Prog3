@@ -1,5 +1,8 @@
-import { StyleSheet, Text, View, Image, ScrollView, Pressable, Alert } from 'react-native';
+import { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, Image, ScrollView, Pressable } from 'react-native';
 import { Ionicons } from "@expo/vector-icons";
+import { doc, onSnapshot } from 'firebase/firestore';
+import { auth, db } from './firebaseConfig';
 
 //https://reactnative.dev/docs/tutorial
 //banco de dados => https://firebase.google.com/docs/firestore?hl=pt-br
@@ -7,8 +10,24 @@ import { Ionicons } from "@expo/vector-icons";
 //atualizar versao do node pra v24.22.21 pro firebase rodar normalmente
 //https://nodejs.org/pt-br/download
 
-const Item = ({ route }) => {
-  const item = route.params?.item;
+const Item = ({ route, navigation }) => {
+  const [item, setItem] = useState(route.params?.item);
+  const itemId = route.params?.item?.id;
+
+  useEffect(() => {
+    if (!itemId) return;
+    const cancelar = onSnapshot(
+      doc(db, 'itens', itemId),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const { criadoEm, ...dados } = snapshot.data();
+          setItem({ id: snapshot.id, ...dados });
+        }
+      },
+      (erro) => console.log('Erro ao carregar item:', erro)
+    );
+    return cancelar;
+  }, [itemId]);
 
   if (!item) {
     return (
@@ -17,6 +36,8 @@ const Item = ({ route }) => {
       </View>
     );
   }
+
+  const ehDono = !!item.donoId && item.donoId === auth.currentUser?.uid;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -42,12 +63,14 @@ const Item = ({ route }) => {
       <Text style={styles.rotulo}>Registrado por</Text>
       <Text style={styles.valor}>{item.donoNome || item.donoEmail || 'Não informado'}</Text>
 
-      <Pressable
-        style={styles.botao}
-        onPress={() => Alert.alert('Editar Item', 'O botão "Editar Item" foi pressionado.')}
-      >
-        <Text style={styles.text_botao}>Editar Item</Text>
-      </Pressable>
+      {ehDono && (
+        <Pressable
+          style={styles.botao}
+          onPress={() => navigation.navigate('EditarItem', { item })}
+        >
+          <Text style={styles.text_botao}>Editar Item</Text>
+        </Pressable>
+      )}
 
     </ScrollView>
   );

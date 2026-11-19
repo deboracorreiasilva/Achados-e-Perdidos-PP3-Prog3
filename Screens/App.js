@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, View, KeyboardAvoidingView } from 'react-native';
+import { ActivityIndicator, Pressable, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -8,6 +8,7 @@ import { auth } from './firebaseConfig';
 import Inicial from './Inicial';
 import RegistrarItem from './RegistrarItem';
 import Item from './Item';
+import EditarItem from './EditarItem';
 import Login from './Login';
 import Cadastrar from './Cadastrar';
 import Perfil from './Perfil';
@@ -58,6 +59,7 @@ function App() {
             />
             <Stack.Screen name="RegistrarItem" component={RegistrarItem} />
             <Stack.Screen name="Item" component={Item} />
+            <Stack.Screen name="EditarItem" component={EditarItem} />
             <Stack.Screen name="Perfil" component={Perfil} />
           </>
         ) : (
@@ -68,7 +70,7 @@ function App() {
         )}
       </Stack.Navigator>
     </NavigationContainer>
-    
+
   );
 }
 

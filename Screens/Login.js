@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { StyleSheet, Text, Pressable, ScrollView, TextInput, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, Pressable, ScrollView, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { auth, mensagemErro } from './firebaseConfig';
@@ -48,7 +48,11 @@ const Login = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
+      <KeyboardAvoidingView
+        style={{ flex: 1, width: '100%' }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+      <ScrollView keyboardShouldPersistTaps="handled">
         <Text style={{ marginVertical: 75, fontSize: 24, marginLeft: 20 }}>Login</Text>
 
         <Text style={styles.text}>Email</Text>
@@ -94,6 +98,7 @@ const Login = ({ navigation }) => {
           <Text style={{ color: '#121212' }}>Cadastrar</Text>
         </Pressable>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

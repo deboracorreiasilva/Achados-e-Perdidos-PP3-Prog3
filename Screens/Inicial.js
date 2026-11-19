@@ -96,7 +96,10 @@ const Inicial = () => {
         );
         setCarregando(false);
       },
-      () => setCarregando(false)
+      (erro) => {
+        console.log('Erro ao carregar itens:', erro);
+        setCarregando(false);
+      }
     );
     return cancelar;
   }, []);

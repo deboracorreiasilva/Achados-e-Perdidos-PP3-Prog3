@@ -1,11 +1,13 @@
 import { useState } from "react";
 import {
-  StyleSheet, Text, ScrollView, Pressable, Alert, View, TextInput, Image, ActivityIndicator, Animated, Keyboard
+  StyleSheet, Text, ScrollView, Pressable, View, TextInput, Image,
+  ActivityIndicator, KeyboardAvoidingView, Platform
 } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as ImagePicker from 'expo-image-picker';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './firebaseConfig';
+import SeletorData from './SeletorData';
+import { escolherDaGaleria, tirarFotoCamera, comLimite } from './utilitarios';
 
 //https://reactnative.dev/docs/tutorial
 
@@ -28,41 +30,26 @@ const RegistrarItem = ({ navigation }) => {
 
   //https://docs.expo.dev/versions/latest/sdk/imagepicker/
   const escolherImagem = async () => {
-    const permissaoResultado = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (!permissaoResultado.granted) {
-      Alert.alert('Permissão necessária', 'Permissão para acessar a biblioteca de imagens é necessária');
-      return;
-    }
-
-    const resultado = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!resultado.canceled) {
-      setImagem(resultado.assets[0].uri);
+    try {
+      const nova = await escolherDaGaleria();
+      if (nova) {
+        setErro("");
+        setImagem(nova);
+      }
+    } catch (e) {
+      setErro(e.message);
     }
   };
 
   const tirarFoto = async () => {
-    const permissaoResultado = await ImagePicker.requestCameraPermissionsAsync();
-
-    if (!permissaoResultado.granted) {
-      Alert.alert('Permissão necessária', 'Permissão para acessar a câmera é necessária');
-      return;
-    }
-
-    const resultado = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!resultado.canceled) {
-      setImagem(resultado.assets[0].uri);
+    try {
+      const nova = await tirarFotoCamera();
+      if (nova) {
+        setErro("");
+        setImagem(nova);
+      }
+    } catch (e) {
+      setErro(e.message);
     }
   };
 
@@ -76,20 +63,27 @@ const RegistrarItem = ({ navigation }) => {
 
     setSalvando(true);
     try {
-      await addDoc(collection(db, 'itens'), {
-        titulo: titulo.trim(),
-        local: local.trim(),
-        data: data.trim(),
-        descricao: descricao.trim(),
-        imagem: null,
-        donoId: auth.currentUser.uid,
-        donoNome: auth.currentUser.displayName || '',
-        donoEmail: auth.currentUser.email,
-        criadoEm: serverTimestamp(),
-      });
+      await comLimite(
+        addDoc(collection(db, 'itens'), {
+          titulo: titulo.trim(),
+          local: local.trim(),
+          data: data.trim(),
+          descricao: descricao.trim(),
+          imagem: imagem,
+          donoId: auth.currentUser.uid,
+          donoNome: auth.currentUser.displayName || '',
+          donoEmail: auth.currentUser.email,
+          criadoEm: serverTimestamp(),
+        })
+      );
       navigation.goBack();
     } catch (e) {
-      setErro("Não foi possível registrar o item. Tente novamente.");
+      console.log('Erro ao registrar item:', e);
+      setErro(
+        e.message === 'timeout'
+          ? "Demorou demais para salvar. Verifique sua conexão e tente novamente."
+          : "Não foi possível registrar o item. Tente novamente."
+      );
       setSalvando(false);
     }
   };
@@ -98,70 +92,71 @@ const RegistrarItem = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView 
-        contentContainerStyle={styles.view}
+      <KeyboardAvoidingView
+        style={{ flex: 1, width: '100%' }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={styles.quest}>
-          <Text style={styles.text}>Foto</Text>
+        <ScrollView
+          contentContainerStyle={styles.view}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.quest}>
+            <Text style={styles.text}>Foto</Text>
 
-          {imagem && <Image source={{ uri: imagem }} style={styles.imagem} />}
+            {imagem && <Image source={{ uri: imagem }} style={styles.imagem} />}
 
-          <Pressable style={styles.pressable} onPress={escolherImagem}>
-            <Text style={styles.text_botao}>Escolher Imagem</Text>
-          </Pressable>
+            <Pressable style={styles.pressable} onPress={escolherImagem}>
+              <Text style={styles.text_botao}>Escolher Imagem</Text>
+            </Pressable>
 
-          <Pressable style={styles.pressable} onPress={tirarFoto}>
-            <Text style={styles.text_botao}>Tirar Foto</Text>
-          </Pressable>
+            <Pressable style={styles.pressable} onPress={tirarFoto}>
+              <Text style={styles.text_botao}>Tirar Foto</Text>
+            </Pressable>
 
-          <Text style={styles.text}>Título</Text>
+            <Text style={styles.text}>Título</Text>
 
-          <TextInput
-            style={styles.input_quest}
-            value={titulo}
-            onChangeText={onChangeTitulo}
-          />
+            <TextInput
+              style={styles.input_quest}
+              value={titulo}
+              onChangeText={onChangeTitulo}
+            />
 
-          <Text style={styles.text}>Local</Text>
+            <Text style={styles.text}>Local</Text>
 
-          <TextInput
-            style={styles.input_quest}
-            value={local}
-            onChangeText={onChangeLocal}
-          />
+            <TextInput
+              style={styles.input_quest}
+              value={local}
+              onChangeText={onChangeLocal}
+            />
 
-          <Text style={styles.text}>Data</Text>
+            <Text style={styles.text}>Data</Text>
 
-          <TextInput
-            style={styles.input_quest}
-            value={data}
-            onChangeText={onChangeData}
-          />
-          <Text style={{color: 'red', fontSize: 20}}>escolher data pelo calendário</Text>
+            <SeletorData value={data} onChange={onChangeData} />
 
-          <Text style={styles.text}>Descricao</Text>
+            <Text style={styles.text}>Descrição</Text>
 
-          <TextInput
-            style={styles.descricao}
-            value={descricao}
-            onChangeText={onChangeDescricao}
-            multiline={true}
-          />
+            <TextInput
+              style={styles.descricao}
+              value={descricao}
+              onChangeText={onChangeDescricao}
+              multiline={true}
+            />
 
-          {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
+            {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
 
-          <Pressable
-            style={styles.registrar}
-            onPress={registrar}
-            disabled={salvando}>
-            {salvando ? (
-              <ActivityIndicator color="#121212" />
-            ) : (
-              <Text style={styles.text_botao}>Registrar Item</Text>
-            )}
-          </Pressable>
-        </View>
-      </ScrollView>
+            <Pressable
+              style={styles.registrar}
+              onPress={registrar}
+              disabled={salvando}>
+              {salvando ? (
+                <ActivityIndicator color="#121212" />
+              ) : (
+                <Text style={styles.text_botao}>Registrar Item</Text>
+              )}
+            </Pressable>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
