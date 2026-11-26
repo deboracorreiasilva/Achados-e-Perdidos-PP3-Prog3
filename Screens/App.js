@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, View, Image } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
@@ -14,6 +15,12 @@ import Login from './Login';
 import Cadastrar from './Cadastrar';
 import Perfil from './Perfil';
 import ListaItens from './ListaItens';
+=======
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import Cadastrar from './Cadastar'; 
+import Login from './Login';
+import Perfil from './Perfil';
+>>>>>>> fde056ca57eccdc0c46a39c528002e54d8eae960
 
 const Stack = createNativeStackNavigator(); {/* O que é isso?? */ }
 
@@ -55,6 +62,7 @@ function App() {
 
   return (
     <NavigationContainer>
+<<<<<<< HEAD
       <Stack.Navigator
         screenOptions={{
           headerShown: true,
@@ -102,6 +110,14 @@ function App() {
       </Stack.Navigator>
     </NavigationContainer>
 
+=======
+      <Stack.Navigator initialRouteName="Cadastar">
+        <Stack.Screen name="Login" component={Login} options={{ headerShown: true, title: "Achados e Perdidos"}} />
+        <Stack.Screen name="Cadastrar" component={Cadastrar} /> 
+        <Stack.Screen name="Perfil" component={Perfil} /> 
+      </Stack.Navigator>
+    </NavigationContainer>
+>>>>>>> fde056ca57eccdc0c46a39c528002e54d8eae960
   );
 }
 
