@@ -14,36 +14,36 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
-import { db } from './firebaseConfig';
+import { auth, db } from './firebaseConfig';
 
 //https://reactnative.dev/docs/tutorial
 
 const itens = [
-    {
-      nome: 'Item 1',
-      avatar_url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7CuFWYHxngNBxvuv_fCb6Gc_J0znbdDM2DIHX-xY8jQ&s',
-      local: 'Sala 01',
-      data: '10/09/2026',
-      //icon: 'apparel',
-      descricao: 'O item 1 foi encontrado em tal lugar em tal dia'
-    },
-    {
-      nome: 'Item 2',
-      avatar_url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJ6kRNdZzBxQ2nXriy7lsr72-ii7iBbzc7HfLqzDEK_w&s=10',
-      local: 'Sala 16',
-      data: '23/07/2026',
-      //icon: 'cards-stack',
-      descricao: 'O item 2 foi encontrado em tal lugar em tal dia'
-    },
-    {
-      nome: 'Item 3',
-      avatar_url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJ6kRNdZzBxQ2nXriy7lsr72-ii7iBbzc7HfLqzDEK_w&s=10',
-      local: 'Sala 11',
-      data: '17/02/2026',
-      //icon: 'cards-stack',
-      descricao: 'O item 3 foi encontrado em tal lugar em tal dia'
-    },
-  ]
+  {
+    nome: 'Item 1',
+    avatar_url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7CuFWYHxngNBxvuv_fCb6Gc_J0znbdDM2DIHX-xY8jQ&s',
+    local: 'Sala 01',
+    data: '10/09/2026',
+    //icon: 'apparel',
+    descricao: 'O item 1 foi encontrado em tal lugar em tal dia'
+  },
+  {
+    nome: 'Item 2',
+    avatar_url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJ6kRNdZzBxQ2nXriy7lsr72-ii7iBbzc7HfLqzDEK_w&s=10',
+    local: 'Sala 16',
+    data: '23/07/2026',
+    //icon: 'cards-stack',
+    descricao: 'O item 2 foi encontrado em tal lugar em tal dia'
+  },
+  {
+    nome: 'Item 3',
+    avatar_url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJ6kRNdZzBxQ2nXriy7lsr72-ii7iBbzc7HfLqzDEK_w&s=10',
+    local: 'Sala 11',
+    data: '17/02/2026',
+    //icon: 'cards-stack',
+    descricao: 'O item 3 foi encontrado em tal lugar em tal dia'
+  },
+]
 
 const itensExemplo = itens.map((item, indice) => ({
   id: `exemplo-${indice}`,
@@ -53,6 +53,18 @@ const itensExemplo = itens.map((item, indice) => ({
   data: item.data,
   descricao: item.descricao,
 }));
+
+const ABAS = [
+  { chave: 'todos', rotulo: 'Todos' },
+  { chave: 'meus', rotulo: 'Meus' },
+  { chave: 'solicitados', rotulo: 'Solicitados' },
+];
+
+const MENSAGEM_VAZIA = {
+  todos: 'Nenhum item encontrado.',
+  meus: 'Você ainda não registrou nenhum item.',
+  solicitados: 'Você ainda não solicitou a recuperação de nenhum item.',
+};
 
 const ItemCard = ({ item }) => (
   <View style={styles.item}>
@@ -71,6 +83,11 @@ const ItemCard = ({ item }) => (
       <Text style={styles.text_item}>{item.local} - {item.data}</Text>
     ) : null}
     <Text style={styles.text_item} numberOfLines={2}>{item.descricao}</Text>
+    {item.recuperacaoSolicitadaPor ? (
+      <Text style={styles.aviso_item} numberOfLines={1}>
+        Pedido de: {item.recuperacaoSolicitadaPor.nome}
+      </Text>
+    ) : null}
   </View>
 );
 
@@ -80,6 +97,7 @@ const Inicial = () => {
   const navigation = useNavigation();
 
   const [pesquisa, onChangePesquisa] = useState("");
+  const [aba, setAba] = useState('todos');
   const [itensBanco, setItensBanco] = useState([]);
   const [carregando, setCarregando] = useState(true);
 
@@ -104,8 +122,18 @@ const Inicial = () => {
     return cancelar;
   }, []);
 
+  const uid = auth.currentUser?.uid;
+
+  // itens de exemplo só aparecem na aba "Todos"
+  const porAba =
+    aba === 'meus'
+      ? itensBanco.filter((item) => item.donoId === uid)
+      : aba === 'solicitados'
+        ? itensBanco.filter((item) => item.recuperacaoSolicitadaPor?.id === uid)
+        : [...itensBanco, ...itensExemplo];
+
   const termo = pesquisa.trim().toLowerCase();
-  const itensFiltrados = [...itensBanco, ...itensExemplo].filter((item) =>
+  const itensFiltrados = porAba.filter((item) =>
     !termo ||
     [item.titulo, item.local, item.data].some((campo) =>
       (campo || '').toLowerCase().includes(termo)
@@ -156,6 +184,20 @@ const Inicial = () => {
           <Text style={styles.text_botao}>Registrar Item Perdido</Text>
         </Pressable>
 
+        <View style={styles.abas}>
+          {ABAS.map((a) => (
+            <Pressable
+              key={a.chave}
+              style={[styles.aba, aba === a.chave && styles.abaAtiva]}
+              onPress={() => setAba(a.chave)}
+            >
+              <Text style={[styles.abaTexto, aba === a.chave && styles.abaTextoAtivo]}>
+                {a.rotulo}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
         {carregando ? (
           <ActivityIndicator size="large" style={{ marginTop: 40 }} />
         ) : (
@@ -164,7 +206,7 @@ const Inicial = () => {
             renderItem={renderItem}
             keyExtractor={(item) => item.id}
             ListEmptyComponent={
-              <Text style={styles.vazio}>Nenhum item encontrado.</Text>
+              <Text style={styles.vazio}>{MENSAGEM_VAZIA[aba]}</Text>
             }
           />
         )}
@@ -200,6 +242,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#94b6f6',
     alignSelf: 'flex-start',
   },
+  abas: {
+    flexDirection: 'row',
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  aba: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 100,
+    marginHorizontal: 4,
+    backgroundColor: '#e3e2e2',
+  },
+  abaAtiva: {
+    backgroundColor: '#b7afff',
+  },
+  abaTexto: {
+    color: '#555',
+  },
+  abaTextoAtivo: {
+    color: '#121212',
+    fontWeight: '600',
+  },
   text_botao: {
     color: '#121212',
     alignSelf: 'center',
@@ -226,6 +290,11 @@ const styles = StyleSheet.create({
   text_item: {
     fontSize: 12,
     marginBottom: 3,
+    marginLeft: 10,
+  },
+  aviso_item: {
+    fontSize: 12,
+    color: '#2e7d32',
     marginLeft: 10,
   },
   //https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/box-shadow

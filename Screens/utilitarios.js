@@ -10,7 +10,7 @@ export const comLimite = (promessa, ms = 15000) =>
     new Promise((_, rejeitar) => setTimeout(() => rejeitar(new Error('timeout')), ms)),
   ]);
 
-const processar = async (asset) => {
+export const processar = async (asset) => {
   let dataUri;
   try {
     const reduzida = await ImageManipulator.manipulateAsync(
