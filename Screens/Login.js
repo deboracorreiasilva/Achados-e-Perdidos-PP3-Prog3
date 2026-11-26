@@ -49,11 +49,11 @@ const Login = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
-        style={{ flex: 1, width: '100%' }}
+        style={{ flex: 1, width: '100%', alignItems: "center" }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
       <ScrollView keyboardShouldPersistTaps="handled">
-        <Text style={{ marginVertical: 75, fontSize: 24, marginLeft: 20 }}>Login</Text>
+        <Text style={{ marginVertical: 65, fontSize: 24, marginLeft: 20 }}>Login</Text>
 
         <Text style={styles.text}>Email</Text>
         <TextInput
@@ -78,7 +78,7 @@ const Login = ({ navigation }) => {
         {aviso !== "" && <Text style={styles.aviso}>{aviso}</Text>}
 
         <Pressable onPress={esqueceuSenha}>
-          <Text style={{ fontSize: 15 }}>Esqueceu a senha?</Text>
+          <Text style={{ fontSize: 15, color: "#141464", alignSelf: "center" }}>Esqueceu a senha?</Text>
         </Pressable>
 
         <Pressable
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   input: {
-    borderWidth: 2,
+    borderWidth: 1,
     borderRadius: 100,
     height: 40,
     width: 320,

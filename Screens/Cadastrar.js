@@ -32,7 +32,7 @@ const Cadastrar = () => {
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
-        style={{ flex: 1, width: '100%' }}
+        style={{ flex: 1, width: '100%', alignItems: "center" }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
       <ScrollView keyboardShouldPersistTaps="handled">

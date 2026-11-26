@@ -18,42 +18,6 @@ import { auth, db } from './firebaseConfig';
 
 //https://reactnative.dev/docs/tutorial
 
-const itens = [
-  {
-    nome: 'Item 1',
-    avatar_url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7CuFWYHxngNBxvuv_fCb6Gc_J0znbdDM2DIHX-xY8jQ&s',
-    local: 'Sala 01',
-    data: '10/09/2026',
-    //icon: 'apparel',
-    descricao: 'O item 1 foi encontrado em tal lugar em tal dia'
-  },
-  {
-    nome: 'Item 2',
-    avatar_url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJ6kRNdZzBxQ2nXriy7lsr72-ii7iBbzc7HfLqzDEK_w&s=10',
-    local: 'Sala 16',
-    data: '23/07/2026',
-    //icon: 'cards-stack',
-    descricao: 'O item 2 foi encontrado em tal lugar em tal dia'
-  },
-  {
-    nome: 'Item 3',
-    avatar_url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJ6kRNdZzBxQ2nXriy7lsr72-ii7iBbzc7HfLqzDEK_w&s=10',
-    local: 'Sala 11',
-    data: '17/02/2026',
-    //icon: 'cards-stack',
-    descricao: 'O item 3 foi encontrado em tal lugar em tal dia'
-  },
-]
-
-const itensExemplo = itens.map((item, indice) => ({
-  id: `exemplo-${indice}`,
-  titulo: item.nome,
-  imagem: item.avatar_url,
-  local: item.local,
-  data: item.data,
-  descricao: item.descricao,
-}));
-
 const ABAS = [
   { chave: 'todos', rotulo: 'Todos' },
   { chave: 'meus', rotulo: 'Meus' },
@@ -92,7 +56,6 @@ const ItemCard = ({ item }) => (
 );
 
 const Inicial = () => {
-  //de SearchBar - React Native elements
   //const [pesquisa, setPesquisa] = useState("");
   const navigation = useNavigation();
 
@@ -124,13 +87,12 @@ const Inicial = () => {
 
   const uid = auth.currentUser?.uid;
 
-  // itens de exemplo só aparecem na aba "Todos"
   const porAba =
     aba === 'meus'
       ? itensBanco.filter((item) => item.donoId === uid)
       : aba === 'solicitados'
         ? itensBanco.filter((item) => item.recuperacaoSolicitadaPor?.id === uid)
-        : [...itensBanco, ...itensExemplo];
+        : [...itensBanco];
 
   const termo = pesquisa.trim().toLowerCase();
   const itensFiltrados = porAba.filter((item) =>
@@ -160,14 +122,8 @@ const Inicial = () => {
   //do ListItem - React Native Elements
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#ececec', }}>
       <View style={styles.container}>
-
-        {/*<SearchBar
-          placeholder='Pesquisar...'
-          onChangeText={this.setPesquisa}
-          value = {pesquisa}
-        />*/}
 
         <TextInput
           style={styles.barra_pesquisa}
@@ -255,13 +211,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#e3e2e2',
   },
   abaAtiva: {
-    backgroundColor: '#b7afff',
+    backgroundColor: '#c7c1fe',
   },
   abaTexto: {
     color: '#555',
   },
   abaTextoAtivo: {
-    color: '#121212',
+    color: '#6241ba',
     fontWeight: '600',
   },
   text_botao: {
@@ -269,8 +225,9 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   itens: {
-    marginTop: 20,
+    marginTop: 18,
     marginHorizontal: 30,
+    marginBottom: 2.5,
   },
   item: {
     height: 230,
@@ -314,6 +271,8 @@ const styles = StyleSheet.create({
     marginTop: 40,
     fontSize: 16,
     color: '#555',
+    marginHorizontal: 30,
+    alignSelf: 'center',
   },
 });
 
