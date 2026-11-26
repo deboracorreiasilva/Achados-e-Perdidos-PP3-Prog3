@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Image, ScrollView, Pressable } from 'react-native';
+import { StyleSheet, Text, View, Image, ScrollView, Pressable, Alert, Platform, } from 'react-native';
 import { Ionicons } from "@expo/vector-icons";
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, deleteDoc, deleteField } from 'firebase/firestore';
 import { auth, db } from './firebaseConfig';
 
 //https://reactnative.dev/docs/tutorial
@@ -39,6 +39,61 @@ const Item = ({ route, navigation }) => {
 
   const ehDono = !!item.donoId && item.donoId === auth.currentUser?.uid;
 
+  const usuario = auth.currentUser;
+  const ehExemplo = String(item.id).startsWith('exemplo-'); // itens de exemplo não existem no banco
+  const solicitante = item.recuperacaoSolicitadaPor;
+  const euSolicitei = solicitante?.id === usuario?.uid;
+
+  const solicitarRecuperacao = async () => {
+    try {
+      await updateDoc(doc(db, 'itens', item.id), {
+        recuperacaoSolicitadaPor: {
+          id: usuario.uid,
+          nome: usuario.displayName || usuario.email,
+        },
+      });
+    } catch (e) {
+      Alert.alert('Erro', 'Não foi possível solicitar a recuperação.');
+    }
+  };
+
+  const cancelarSolicitacao = async () => {
+    try {
+      await updateDoc(doc(db, 'itens', item.id), {
+        recuperacaoSolicitadaPor: deleteField(),
+      });
+    } catch (e) {
+      Alert.alert('Erro', 'Não foi possível cancelar o pedido.');
+    }
+  };
+
+  const avisar = (titulo, mensagem) => {
+    if (Platform.OS === 'web') window.alert(mensagem);
+    else Alert.alert(titulo, mensagem);
+  };
+
+  const apagar = () => {
+    const excluir = async () => {
+      try {
+        await deleteDoc(doc(db, 'itens', item.id));
+        navigation.goBack();
+      } catch (e) {
+        console.log('Erro ao apagar:', e);
+        avisar('Erro', 'Não foi possível apagar o item.');
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm('Tem certeza que deseja apagar este item?')) excluir();
+      return;
+    }
+
+    Alert.alert('Apagar item', 'Tem certeza que deseja apagar este item?', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Apagar', style: 'destructive', onPress: excluir },
+    ]);
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {item.imagem ? (
@@ -63,13 +118,40 @@ const Item = ({ route, navigation }) => {
       <Text style={styles.rotulo}>Registrado por</Text>
       <Text style={styles.valor}>{item.donoNome || item.donoEmail || 'Não informado'}</Text>
 
-      {ehDono && (
-        <Pressable
-          style={styles.botao}
-          onPress={() => navigation.navigate('EditarItem', { item })}
-        >
-          <Text style={styles.text_botao}>Editar Item</Text>
+      {solicitante && (
+        <>
+          <Text style={styles.rotulo}>Pedido para recuperação de</Text>
+          <Text style={styles.valor}>{solicitante.nome}</Text>
+        </>
+      )}
+
+      {!ehDono && !ehExemplo && !solicitante && (
+        <Pressable style={styles.botao} onPress={solicitarRecuperacao}>
+          <Text style={styles.text_botao}>Recuperar item</Text>
         </Pressable>
+      )}
+
+      {euSolicitei && (
+        <Pressable style={styles.botao} onPress={cancelarSolicitacao}>
+          <Text style={styles.text_botao}>Cancelar pedido</Text>
+        </Pressable>
+      )}
+
+      {ehDono && (
+        <>
+          <Pressable
+            style={styles.botao}
+            onPress={() => navigation.navigate('EditarItem', { item })}
+          >
+            <Text style={styles.text_botao}>Editar Item</Text>
+          </Pressable>
+
+          {!solicitante && (
+            <Pressable style={[styles.botao, { backgroundColor: '#f4a6a6' }]} onPress={apagar}>
+              <Text style={styles.text_botao}>Apagar Item</Text>
+            </Pressable>
+          )}
+        </>
       )}
 
     </ScrollView>
@@ -107,7 +189,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#b7afff',
     alignSelf: 'flex-start',
   },
-   text_botao: {
+  text_botao: {
     color: '#121212',
     alignSelf: 'center',
   },
